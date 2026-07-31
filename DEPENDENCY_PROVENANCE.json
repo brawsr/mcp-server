@@ -1,0 +1,13 @@
+{
+  "schema_version": "brawsr-mcp-dependency-v1",
+  "sdk": {
+    "repository": "brawsr/sdk-typescript",
+    "commit": "e76e977c539a799f96cc56a1598fe6bd07f52c0e",
+    "package": "@brawsr/sdk@0.1.0",
+    "artifact_path": "vendor/brawsr-sdk-0.1.0.tgz",
+    "artifact_sha256": "d79da847b0f551c704571585588565dfaf27bde0766ed0ff5888f52554c25ce3"
+  },
+  "mcp_sdk": "@modelcontextprotocol/sdk@1.30.0",
+  "transport": "stdio",
+  "policy": "New audited implementation with no proprietary core history or duplicated SDK source."
+}

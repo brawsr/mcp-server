@@ -1,0 +1,52 @@
+{
+  "name": "@brawsr/mcp-server",
+  "version": "0.1.0",
+  "description": "Authenticated MCP tools for brawsr browser sessions, checkpoints, rewind, and fork.",
+  "private": true,
+  "packageManager": "npm@10.8.2",
+  "type": "module",
+  "bin": {
+    "brawsr-mcp-server": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test test/*.test.ts",
+    "verify:package": "npm run build && node scripts/verify-package.mjs",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run verify:package"
+  },
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "zod": "4.4.3"
+  },
+  "peerDependencies": {
+    "@brawsr/sdk": "0.1.0"
+  },
+  "devDependencies": {
+    "@brawsr/sdk": "file:vendor/brawsr-sdk-0.1.0.tgz",
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.1.2",
+    "eslint": "10.8.0",
+    "prettier": "3.9.6",
+    "tsx": "4.23.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.65.0"
+  }
+}
