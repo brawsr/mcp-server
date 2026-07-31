@@ -222,7 +222,7 @@ export function createBrawsrMcpServer(
     "brawsr_rewind",
     {
       description:
-        "Rewind browser state and wait to a bounded terminal result. This does not undo server-side website effects; discard stale browser/CDP handles and reconnect.",
+        "Rewind browser state and return connectable CDP data. This does not undo server-side website effects; discard stale browser/CDP handles and reconnect. Wait for the operation before another lifecycle mutation on this session.",
       inputSchema: z
         .object({
           ...selectorShape,

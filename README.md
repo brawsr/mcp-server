@@ -31,9 +31,10 @@ MCP protocol messages. Redacted lifecycle diagnostics use standard error.
 - `brawsr_get_operation`, `brawsr_wait_operation`
 
 Checkpoint, rewind, and fork are one high-level tool call. The packaged SDK
-hides a synchronous result versus a durable `202` operation and waits to a
-bounded terminal result. A timeout stops only local waiting and returns the
-operation/idempotency recovery fields; server work continues.
+hides ordinary `202` polling. Rewind returns as soon as its result is CDP-usable;
+the operation may finish bounded post-restore work in the background. A timeout
+stops only local waiting and returns the operation/idempotency recovery fields;
+server work continues.
 
 Fork children are independent peer sessions, not implicit winners or losers.
 There is no browser-state merge and no automatic sibling cleanup. Rewind
