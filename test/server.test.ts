@@ -25,6 +25,7 @@ function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
     async getSession(id) {
       return {
         id,
+        cdpUrl: `wss://api.test/v1/sessions/${id}/cdp`,
         status: "active",
         createdAt: "2026-07-31T00:00:00Z",
         expiresAt: "2026-07-31T01:00:00Z",

@@ -2,10 +2,10 @@
   "schema_version": "brawsr-mcp-dependency-v1",
   "sdk": {
     "repository": "brawsr/sdk-typescript",
-    "commit": "419df09bc4fc64be8c70a243ee376a905962e1f8",
+    "commit": "ae6d49e4035a3edec329e20440addc0d2e1cc0d3",
     "package": "@brawsr/sdk@0.1.0",
     "artifact_path": "vendor/brawsr-sdk-0.1.0.tgz",
-    "artifact_sha256": "86e8e9728969af0cb0b4b5eb307e9c32e2d84b330c3ac82c53ff5a3e39977925"
+    "artifact_sha256": "d3c17663deb051448addf2d0658ec90637dd51c69b82ba0e37b15639bc63aa02"
   },
   "mcp_sdk": "@modelcontextprotocol/sdk@1.30.0",
   "transport": "stdio",
