@@ -138,7 +138,7 @@ export function createBrawsrMcpServer(
     "brawsr_create_checkpoint",
     {
       description:
-        "Create a browser checkpoint and wait to a bounded terminal result. Explicit mode trusts the caller's safe-point assertion.",
+        "Create a browser checkpoint at a caller-chosen safe point and wait for a bounded terminal result.",
       inputSchema: z
         .object({
           session_id: identifier,
@@ -157,7 +157,6 @@ export function createBrawsrMcpServer(
           ttlSeconds: ttl_seconds,
           idempotencyKey: idempotency_key,
           timeoutMs: timeout_ms ?? defaultTimeoutMs,
-          mode: "explicit",
         }),
       ),
   );

@@ -54,8 +54,6 @@ function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
         operationId: "op_1",
         checkpointId: "chk_1",
         safePoint: {
-          mode: "explicit" as const,
-          callerAsserted: true,
           infrastructureBarriersPassed: true,
           warningCodes: [],
         },
@@ -69,7 +67,6 @@ function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
         operationId: "op_1",
         lifecycle: "live",
         durability: "warm",
-        mode: "explicit" as const,
         createdAt: "2026-07-31T00:00:00Z",
       };
     },

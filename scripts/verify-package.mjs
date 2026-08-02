@@ -20,23 +20,24 @@ if (process.versions.node.split(".")[0] !== "20") {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), "brawsr-mcp-package-"));
-const npmCommand = ["--yes", "npm@10.8.2"];
+const npmCommand = "npm";
 const environment = {
   ...process.env,
   npm_config_cache: path.join(temporaryRoot, "npm-cache"),
 };
+assert.equal(
+  execFileSync(npmCommand, ["--version"], {
+    encoding: "utf8",
+    env: environment,
+  }).trim(),
+  "10.8.2",
+  "reproducible MCP archives must be built with the pinned npm 10.8.2 toolchain",
+);
 
 function pack(destination) {
   const output = execFileSync(
-    "npx",
-    [
-      ...npmCommand,
-      "pack",
-      "--json",
-      "--ignore-scripts",
-      "--pack-destination",
-      destination,
-    ],
+    npmCommand,
+    ["pack", "--json", "--ignore-scripts", "--pack-destination", destination],
     { cwd: root, encoding: "utf8", env: environment },
   );
   const metadata = JSON.parse(output)[0];
@@ -81,9 +82,8 @@ try {
     JSON.stringify({ private: true, type: "module" }),
   );
   execFileSync(
-    "npx",
+    npmCommand,
     [
-      ...npmCommand,
       "install",
       "--ignore-scripts",
       "--no-audit",
