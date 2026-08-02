@@ -13,11 +13,16 @@ export type BrawsrSdk = Pick<
   BrawsrClient,
   | "createSession"
   | "getSession"
+  | "listSessions"
+  | "updateSessionLabel"
   | "closeSession"
   | "closeSessions"
   | "createCheckpoint"
   | "getCheckpoint"
   | "listCheckpoints"
+  | "listCheckpointAncestry"
+  | "listActivity"
+  | "getLineage"
   | "deleteCheckpoint"
   | "rewind"
   | "fork"
@@ -69,13 +74,44 @@ export function createBrawsrMcpServer(
         .object({
           ttl_seconds: z.number().int().positive().optional(),
           mem_mib: z.number().int().positive().optional(),
+          display_label: z.string().max(128).optional(),
         })
         .strict(),
       outputSchema: resultSchema,
     },
-    async ({ ttl_seconds, mem_mib }) =>
+    async ({ ttl_seconds, mem_mib, display_label }) =>
       invoke(() =>
-        client.createSession({ ttlSeconds: ttl_seconds, memMib: mem_mib }),
+        client.createSession({
+          ttlSeconds: ttl_seconds,
+          memMib: mem_mib,
+          displayLabel: display_label,
+        }),
+      ),
+  );
+
+  server.registerTool(
+    "brawsr_list_sessions",
+    {
+      description:
+        "List one bounded page of project sessions, including retained terminal sessions.",
+      inputSchema: z
+        .object({
+          limit: z.number().int().min(1).max(100).optional(),
+          cursor: z.string().min(1).max(4096).optional(),
+          status: z.enum(["active", "closed", "expired"]).optional(),
+          display_label: z.string().max(128).optional(),
+        })
+        .strict(),
+      outputSchema: resultSchema,
+    },
+    async ({ limit, cursor, status, display_label }) =>
+      invoke(() =>
+        client.listSessions({
+          limit,
+          cursor,
+          status,
+          displayLabel: display_label,
+        }),
       ),
   );
 
@@ -87,6 +123,23 @@ export function createBrawsrMcpServer(
       outputSchema: resultSchema,
     },
     async ({ session_id }) => invoke(() => client.getSession(session_id)),
+  );
+
+  server.registerTool(
+    "brawsr_update_session_label",
+    {
+      description:
+        "Set a session display label, or clear it by passing an empty string.",
+      inputSchema: z
+        .object({
+          session_id: identifier,
+          display_label: z.string().max(128),
+        })
+        .strict(),
+      outputSchema: resultSchema,
+    },
+    async ({ session_id, display_label }) =>
+      invoke(() => client.updateSessionLabel(session_id, display_label)),
   );
 
   server.registerTool(
@@ -175,27 +228,80 @@ export function createBrawsrMcpServer(
   server.registerTool(
     "brawsr_list_checkpoints",
     {
-      description: "List one bounded page of checkpoints for a session.",
+      description:
+        "List one bounded page of the session's checkpoint capture history. Deleted captures remain visible and are not valid rewind targets.",
       inputSchema: z
         .object({
           session_id: identifier,
           limit: z.number().int().min(1).max(100).optional(),
           cursor: z.string().min(1).max(4096).optional(),
-          lifecycle: z.string().min(1).max(64).optional(),
-          durability: z.string().min(1).max(64).optional(),
         })
         .strict(),
       outputSchema: resultSchema,
     },
-    async ({ session_id, limit, cursor, lifecycle, durability }) =>
+    async ({ session_id, limit, cursor }) =>
       invoke(() =>
         client.listCheckpoints(session_id, {
           limit,
           cursor,
-          lifecycle,
-          durability,
         }),
       ),
+  );
+
+  server.registerTool(
+    "brawsr_list_rewindable_checkpoints",
+    {
+      description:
+        "List one bounded page of the current rewindable checkpoint ancestry for a session.",
+      inputSchema: z
+        .object({
+          session_id: identifier,
+          limit: z.number().int().min(1).max(100).optional(),
+          cursor: z.string().min(1).max(4096).optional(),
+        })
+        .strict(),
+      outputSchema: resultSchema,
+    },
+    async ({ session_id, limit, cursor }) =>
+      invoke(() =>
+        client.listCheckpointAncestry(session_id, { limit, cursor }),
+      ),
+  );
+
+  server.registerTool(
+    "brawsr_list_session_activity",
+    {
+      description:
+        "List one bounded page of customer-visible lifecycle and operation activity for a session.",
+      inputSchema: z
+        .object({
+          session_id: identifier,
+          limit: z.number().int().min(1).max(100).optional(),
+          cursor: z.string().min(1).max(4096).optional(),
+        })
+        .strict(),
+      outputSchema: resultSchema,
+    },
+    async ({ session_id, limit, cursor }) =>
+      invoke(() => client.listActivity(session_id, { limit, cursor })),
+  );
+
+  server.registerTool(
+    "brawsr_get_session_lineage",
+    {
+      description:
+        "Get one session, its optional parent fork edge, and one bounded page of direct child sessions.",
+      inputSchema: z
+        .object({
+          session_id: identifier,
+          limit: z.number().int().min(1).max(100).optional(),
+          cursor: z.string().min(1).max(4096).optional(),
+        })
+        .strict(),
+      outputSchema: resultSchema,
+    },
+    async ({ session_id, limit, cursor }) =>
+      invoke(() => client.getLineage(session_id, { limit, cursor })),
   );
 
   server.registerTool(

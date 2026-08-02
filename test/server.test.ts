@@ -11,6 +11,12 @@ import { createBrawsrMcpServer, type BrawsrSdk } from "../src/index.ts";
 interface Calls {
   fork: unknown[][];
   closeSessions: unknown[][];
+  listSessions: unknown[][];
+  updateSessionLabel: unknown[][];
+  listCheckpoints: unknown[][];
+  listCheckpointAncestry: unknown[][];
+  listActivity: unknown[][];
+  getLineage: unknown[][];
 }
 
 function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
@@ -20,6 +26,7 @@ function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
         id: "sess_1",
         cdpUrl: "wss://api.test/v1/sessions/sess_1/cdp",
         ttlSeconds: 300,
+        displayLabel: "Checkout",
       };
     },
     async getSession(id) {
@@ -27,6 +34,38 @@ function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
         id,
         cdpUrl: `wss://api.test/v1/sessions/${id}/cdp`,
         status: "active",
+        displayLabel: "Checkout",
+        attachable: true,
+        createdAt: "2026-07-31T00:00:00Z",
+        expiresAt: "2026-07-31T01:00:00Z",
+      };
+    },
+    async listSessions(options) {
+      calls.listSessions.push([options]);
+      return {
+        items: [
+          {
+            id: "sess_1",
+            status: "closed",
+            displayLabel: "Checkout",
+            closeReason: "normal",
+            attachable: false,
+            createdAt: "2026-07-31T00:00:00Z",
+            expiresAt: "2026-07-31T01:00:00Z",
+            closedAt: "2026-07-31T00:30:00Z",
+          },
+        ],
+        nextCursor: "cursor_sessions",
+      };
+    },
+    async updateSessionLabel(id, displayLabel) {
+      calls.updateSessionLabel.push([id, displayLabel]);
+      return {
+        id,
+        cdpUrl: `wss://api.test/v1/sessions/${id}/cdp`,
+        status: "active",
+        displayLabel,
+        attachable: true,
         createdAt: "2026-07-31T00:00:00Z",
         expiresAt: "2026-07-31T01:00:00Z",
       };
@@ -70,8 +109,66 @@ function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
         createdAt: "2026-07-31T00:00:00Z",
       };
     },
-    async listCheckpoints() {
-      return { items: [] };
+    async listCheckpoints(...args) {
+      calls.listCheckpoints.push(args);
+      return {
+        items: [
+          {
+            id: "chk_deleted",
+            captureSessionId: "sess_1",
+            operationId: "op_checkpoint",
+            lifecycle: "deleted",
+            durability: "warm",
+            isHead: false,
+            createdAt: "2026-07-31T00:05:00Z",
+            deletedAt: "2026-07-31T00:20:00Z",
+          },
+        ],
+      };
+    },
+    async listCheckpointAncestry(...args) {
+      calls.listCheckpointAncestry.push(args);
+      return {
+        items: [
+          {
+            id: "chk_1",
+            captureSessionId: "sess_1",
+            operationId: "op_checkpoint",
+            lifecycle: "live",
+            durability: "warm",
+            isHead: true,
+            createdAt: "2026-07-31T00:05:00Z",
+          },
+        ],
+      };
+    },
+    async listActivity(...args) {
+      calls.listActivity.push(args);
+      return {
+        items: [
+          {
+            id: "event_1",
+            kind: "session_created",
+            createdAt: "2026-07-31T00:00:00Z",
+          },
+        ],
+      };
+    },
+    async getLineage(...args) {
+      calls.getLineage.push(args);
+      return {
+        session: {
+          id: "sess_1",
+          status: "closed",
+          displayLabel: "Checkout",
+          closeReason: "normal",
+          attachable: false,
+          createdAt: "2026-07-31T00:00:00Z",
+          expiresAt: "2026-07-31T01:00:00Z",
+          closedAt: "2026-07-31T00:30:00Z",
+        },
+        children: [],
+      };
     },
     async deleteCheckpoint() {},
     async rewind(sessionId) {
@@ -131,7 +228,16 @@ function operation(status: string) {
 }
 
 async function connected(timeout = false) {
-  const calls: Calls = { fork: [], closeSessions: [] };
+  const calls: Calls = {
+    fork: [],
+    closeSessions: [],
+    listSessions: [],
+    updateSessionLabel: [],
+    listCheckpoints: [],
+    listCheckpointAncestry: [],
+    listActivity: [],
+    getLineage: [],
+  };
   const server = createBrawsrMcpServer({
     client: fakeSdk(calls, timeout),
     defaultTimeoutMs: 12_345,
@@ -160,8 +266,13 @@ test("real MCP client sees the exact high-level tool surface", async () => {
       "brawsr_get_checkpoint",
       "brawsr_get_operation",
       "brawsr_get_session",
+      "brawsr_get_session_lineage",
       "brawsr_list_checkpoints",
+      "brawsr_list_rewindable_checkpoints",
+      "brawsr_list_session_activity",
+      "brawsr_list_sessions",
       "brawsr_rewind",
+      "brawsr_update_session_label",
       "brawsr_wait_operation",
     ]);
     assert.match(
@@ -286,10 +397,23 @@ test("multi-close preserves every ordered partial-failure outcome", async () => 
 });
 
 test("real MCP client executes every remaining lifecycle tool", async () => {
-  const { server, client } = await connected();
+  const { server, client, calls: sdkCalls } = await connected();
   const calls = [
-    ["brawsr_create_session", {}],
+    ["brawsr_create_session", { display_label: "Checkout" }],
+    [
+      "brawsr_list_sessions",
+      {
+        limit: 10,
+        cursor: "cursor_sessions_in",
+        status: "closed",
+        display_label: "Checkout",
+      },
+    ],
     ["brawsr_get_session", { session_id: "sess_1" }],
+    [
+      "brawsr_update_session_label",
+      { session_id: "sess_1", display_label: "" },
+    ],
     ["brawsr_close_session", { session_id: "sess_1" }],
     [
       "brawsr_create_checkpoint",
@@ -297,6 +421,9 @@ test("real MCP client executes every remaining lifecycle tool", async () => {
     ],
     ["brawsr_get_checkpoint", { checkpoint_id: "chk_1" }],
     ["brawsr_list_checkpoints", { session_id: "sess_1", limit: 10 }],
+    ["brawsr_list_rewindable_checkpoints", { session_id: "sess_1", limit: 10 }],
+    ["brawsr_list_session_activity", { session_id: "sess_1", limit: 10 }],
+    ["brawsr_get_session_lineage", { session_id: "sess_1", limit: 10 }],
     ["brawsr_delete_checkpoint", { checkpoint_id: "chk_1" }],
     ["brawsr_rewind", { session_id: "sess_1", checkpoint_id: "chk_1" }],
     ["brawsr_get_operation", { operation_id: "op_1" }],
@@ -311,6 +438,44 @@ test("real MCP client executes every remaining lifecycle tool", async () => {
           ((response.structuredContent ?? {}) as Record<string, unknown>),
       );
     }
+    assert.deepEqual(sdkCalls.listSessions, [
+      [
+        {
+          limit: 10,
+          cursor: "cursor_sessions_in",
+          status: "closed",
+          displayLabel: "Checkout",
+        },
+      ],
+    ]);
+    assert.deepEqual(sdkCalls.updateSessionLabel, [["sess_1", ""]]);
+    assert.deepEqual(sdkCalls.listCheckpoints, [
+      ["sess_1", { limit: 10, cursor: undefined }],
+    ]);
+    assert.deepEqual(sdkCalls.listCheckpointAncestry, [
+      ["sess_1", { limit: 10, cursor: undefined }],
+    ]);
+    assert.deepEqual(sdkCalls.listActivity, [
+      ["sess_1", { limit: 10, cursor: undefined }],
+    ]);
+    assert.deepEqual(sdkCalls.getLineage, [
+      ["sess_1", { limit: 10, cursor: undefined }],
+    ]);
+  } finally {
+    await client.close();
+    await server.close();
+  }
+});
+
+test("checkpoint history rejects removed internal lifecycle filters", async () => {
+  const { server, client, calls } = await connected();
+  try {
+    const response = await client.callTool({
+      name: "brawsr_list_checkpoints",
+      arguments: { session_id: "sess_1", lifecycle: "live" },
+    });
+    assert.equal(response.isError, true);
+    assert.equal(calls.listCheckpoints.length, 0);
   } finally {
     await client.close();
     await server.close();

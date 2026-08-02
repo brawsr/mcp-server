@@ -23,12 +23,27 @@ MCP protocol messages. Redacted lifecycle diagnostics use standard error.
 
 ## Tools
 
-- `brawsr_create_session`, `brawsr_get_session`, `brawsr_close_session`
+- `brawsr_create_session`, `brawsr_list_sessions`, `brawsr_get_session`,
+  `brawsr_update_session_label`, `brawsr_close_session`
 - `brawsr_close_sessions`
 - `brawsr_create_checkpoint`, `brawsr_get_checkpoint`,
   `brawsr_list_checkpoints`, `brawsr_delete_checkpoint`
+- `brawsr_list_rewindable_checkpoints`, `brawsr_list_session_activity`,
+  `brawsr_get_session_lineage`
 - `brawsr_rewind`, `brawsr_fork`
 - `brawsr_get_operation`, `brawsr_wait_operation`
+
+Session creation accepts an optional `display_label`. The same label can be
+changed or cleared with one `brawsr_update_session_label` call. Session lists
+are newest-first, bounded, and may include retained closed or expired sessions.
+`brawsr_get_session` includes a CDP URL only while the session is attachable.
+
+`brawsr_list_checkpoints` is capture history: it can include deleted captures
+for audit and dashboard views. Use `brawsr_list_rewindable_checkpoints` when
+choosing a valid rewind or fork target. Lineage returns one session, its
+optional parent fork edge, and one bounded page of direct children; callers can
+follow child session IDs to browse a nested fork tree. Pagination cursors are
+opaque and may be passed back unchanged.
 
 Checkpoint, rewind, and fork are one high-level tool call. The packaged SDK
 hides ordinary `202` polling. Rewind returns as soon as its result is CDP-usable;
@@ -56,6 +71,6 @@ npm ci
 npm run verify
 ```
 
-The checked-in SDK tarball is the exact private WP2 package identified in
+The checked-in SDK tarball is the exact private package identified in
 `DEPENDENCY_PROVENANCE.json`. It contains public consumer code only and is not
 a copy of SDK source. Registry publication remains a P3-M5 release gate.
