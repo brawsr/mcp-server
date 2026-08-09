@@ -12,9 +12,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-if (process.versions.node.split(".")[0] !== "22") {
+if (process.versions.node.split(".")[0] !== "24") {
   throw new Error(
-    "reproducible MCP archives must be built with the pinned Node 22 toolchain",
+    "reproducible MCP archives must be built with the pinned Node 24 toolchain",
   );
 }
 
@@ -23,6 +23,10 @@ const packageJson = JSON.parse(
   readFileSync(path.join(root, "package.json"), "utf8"),
 );
 assert.equal(packageJson.license, "Apache-2.0");
+assert.notEqual(packageJson.private, true);
+assert.equal(packageJson.name, "@brawsr/mcp-server");
+assert.equal(packageJson.mcpName, "io.github.brawsr/brawsr");
+assert.equal(packageJson.dependencies?.["@brawsr/sdk"], "0.1.0");
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), "brawsr-mcp-package-"));
 const npmCommand = "npm";
 const environment = {
@@ -34,8 +38,8 @@ assert.equal(
     encoding: "utf8",
     env: environment,
   }).trim(),
-  "10.8.2",
-  "reproducible MCP archives must be built with the pinned npm 10.8.2 toolchain",
+  "11.5.1",
+  "reproducible MCP archives must be built with the pinned npm 11.5.1 toolchain",
 );
 
 function pack(destination) {
@@ -72,7 +76,10 @@ try {
     "dist/index.js",
     "dist/server.d.ts",
     "dist/server.js",
+    "dist/version.d.ts",
+    "dist/version.js",
     "package.json",
+    "server.json",
   ]);
   assert.equal(
     sha256(first.archive),
@@ -88,14 +95,7 @@ try {
   );
   execFileSync(
     npmCommand,
-    [
-      "install",
-      "--ignore-scripts",
-      "--no-audit",
-      "--no-fund",
-      path.join(root, "vendor/brawsr-sdk-0.1.0.tgz"),
-      first.archive,
-    ],
+    ["install", "--ignore-scripts", "--no-audit", "--no-fund", first.archive],
     { cwd: install, stdio: "pipe", env: environment },
   );
   execFileSync(
@@ -103,7 +103,7 @@ try {
     [
       "--input-type=module",
       "--eval",
-      'import { createBrawsrMcpServer } from "@brawsr/mcp-server"; if (!createBrawsrMcpServer) process.exit(1);',
+      `import { createBrawsrMcpServer, MCP_SERVER_VERSION } from "@brawsr/mcp-server"; if (!createBrawsrMcpServer || MCP_SERVER_VERSION !== ${JSON.stringify(packageJson.version)}) process.exit(1);`,
     ],
     { cwd: install, stdio: "pipe", env: environment },
   );

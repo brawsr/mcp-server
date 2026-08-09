@@ -2,9 +2,10 @@
   "name": "@brawsr/mcp-server",
   "version": "0.1.0",
   "description": "Authenticated MCP tools for brawsr browser sessions, checkpoints, rewind, and fork.",
-  "private": true,
-  "packageManager": "npm@10.8.2",
+  "packageManager": "npm@11.5.1",
+  "mcpName": "io.github.brawsr/brawsr",
   "type": "module",
+  "sideEffects": false,
   "bin": {
     "brawsr-mcp-server": "dist/cli.js"
   },
@@ -16,7 +17,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "server.json"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -25,22 +27,45 @@
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --import tsx --test test/*.test.ts",
+    "check": "npm run format:check && npm run lint && npm run verify:registry && npm run typecheck && npm test",
     "verify:package": "npm run build && node scripts/verify-package.mjs",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run verify:package"
+    "verify:registry": "node scripts/verify-registry.mjs",
+    "verify:release": "node scripts/verify-release.mjs",
+    "verify": "npm run check && npm run verify:package",
+    "prepack": "npm run build"
   },
   "license": "Apache-2.0",
+  "author": "brawsr",
+  "keywords": [
+    "brawsr",
+    "mcp",
+    "model-context-protocol",
+    "browser",
+    "checkpoint",
+    "rewind",
+    "fork"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brawsr/mcp-server.git"
+  },
+  "homepage": "https://docs.brawsr.io",
+  "bugs": {
+    "url": "https://github.com/brawsr/mcp-server/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
+    "@brawsr/sdk": "0.1.0",
     "@modelcontextprotocol/sdk": "1.30.0",
     "zod": "4.4.3"
   },
-  "peerDependencies": {
-    "@brawsr/sdk": "0.1.0"
-  },
   "devDependencies": {
-    "@brawsr/sdk": "file:vendor/brawsr-sdk-0.1.0.tgz",
     "@eslint/js": "10.0.1",
     "@types/node": "26.1.2",
     "eslint": "10.8.0",

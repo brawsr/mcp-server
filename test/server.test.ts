@@ -424,6 +424,10 @@ test("real MCP client executes every remaining lifecycle tool", async () => {
         cursor: "cursor_sessions_in",
         status: "closed",
         display_label: "Checkout",
+        search: "check",
+        session_id: "sess_1",
+        created_from: "2026-07-01T00:00:00Z",
+        created_before: "2026-08-01T00:00:00Z",
       },
     ],
     ["brawsr_get_session", { session_id: "sess_1" }],
@@ -462,6 +466,10 @@ test("real MCP client executes every remaining lifecycle tool", async () => {
           cursor: "cursor_sessions_in",
           status: "closed",
           displayLabel: "Checkout",
+          search: "check",
+          sessionId: "sess_1",
+          createdFrom: "2026-07-01T00:00:00Z",
+          createdBefore: "2026-08-01T00:00:00Z",
         },
       ],
     ]);
@@ -499,7 +507,22 @@ test("checkpoint history rejects removed internal lifecycle filters", async () =
   }
 });
 
-test("CLI configuration failure writes only a redacted structured stderr event", () => {
+test("session list rejects malformed creation bounds before the SDK", async () => {
+  const { server, client, calls } = await connected();
+  try {
+    const response = await client.callTool({
+      name: "brawsr_list_sessions",
+      arguments: { created_from: "yesterday" },
+    });
+    assert.equal(response.isError, true);
+    assert.equal(calls.listSessions.length, 0);
+  } finally {
+    await client.close();
+    await server.close();
+  }
+});
+
+test("missing API key writes only a redacted structured stderr event", () => {
   const environment = { ...process.env };
   delete environment.BRAWSR_API_KEY;
   delete environment.BRAWSR_BASE_URL;

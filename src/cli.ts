@@ -6,16 +6,19 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { createBrawsrMcpServer } from "./server.js";
 
 async function main(): Promise<void> {
-  const apiKey = process.env.BRAWSR_API_KEY;
-  const baseUrl = process.env.BRAWSR_BASE_URL;
-  if (!apiKey || !baseUrl) {
-    throw new Error("BRAWSR_API_KEY and BRAWSR_BASE_URL are required");
+  const apiKey = process.env.BRAWSR_API_KEY?.trim();
+  const baseUrl = process.env.BRAWSR_BASE_URL?.trim();
+  if (!apiKey) {
+    throw new Error("BRAWSR_API_KEY is required");
   }
   const rawTimeout = process.env.BRAWSR_MCP_TIMEOUT_MS;
   const defaultTimeoutMs =
     rawTimeout === undefined ? 30_000 : Number(rawTimeout);
   const server = createBrawsrMcpServer({
-    client: new BrawsrClient({ apiKey, baseUrl }),
+    client: new BrawsrClient({
+      apiKey,
+      ...(baseUrl ? { baseUrl } : {}),
+    }),
     defaultTimeoutMs,
   });
   const transport = new StdioServerTransport(process.stdin, process.stdout, {

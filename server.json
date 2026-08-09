@@ -1,0 +1,48 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.brawsr/brawsr",
+  "title": "brawsr",
+  "description": "Browser sessions, checkpoints, rewind, fork, lineage, and lifecycle tools for brawsr.",
+  "websiteUrl": "https://docs.brawsr.io",
+  "repository": {
+    "url": "https://github.com/brawsr/mcp-server",
+    "source": "github",
+    "id": "1318247747"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@brawsr/mcp-server",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "BRAWSR_API_KEY",
+          "description": "API key for the brawsr project used by this MCP server.",
+          "format": "string",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "BRAWSR_BASE_URL",
+          "description": "Optional explicit API endpoint override for local development or another deployment.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false,
+          "placeholder": "https://api.brawsr.io"
+        },
+        {
+          "name": "BRAWSR_MCP_TIMEOUT_MS",
+          "description": "Optional default lifecycle wait in milliseconds, from 1 through 300000.",
+          "format": "number",
+          "isRequired": false,
+          "isSecret": false,
+          "placeholder": "30000"
+        }
+      ]
+    }
+  ]
+}

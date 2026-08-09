@@ -1,0 +1,49 @@
+name: publish
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: mcp-publish-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: github.event.release.prerelease == false
+    environment: npm
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.release.tag_name }}
+      - name: Verify release commit is on main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+      - run: npm install --global npm@11.5.1
+      - run: npm ci --ignore-scripts
+      - run: npm run verify
+      - run: npm run verify:release
+      - run: npm publish --access public
+      - name: Install pinned MCP Registry publisher
+        run: |
+          set -euo pipefail
+          archive=mcp-publisher_linux_amd64.tar.gz
+          curl -fsSL -o "/tmp/$archive" "https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/$archive"
+          echo "a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  /tmp/$archive" | sha256sum --check --status
+          tar xzf "/tmp/$archive" -C /tmp mcp-publisher
+      - name: Authenticate to the MCP Registry with GitHub OIDC
+        run: /tmp/mcp-publisher login github-oidc
+      - name: Publish discovery metadata to the MCP Registry
+        run: /tmp/mcp-publisher publish

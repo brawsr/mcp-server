@@ -9,6 +9,8 @@ import {
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod/v4";
 
+import { MCP_SERVER_VERSION } from "./version.js";
+
 export type BrawsrSdk = Pick<
   BrawsrClient,
   | "createSession"
@@ -62,7 +64,10 @@ export function createBrawsrMcpServer(
   ) {
     throw new Error("defaultTimeoutMs must be an integer between 1 and 300000");
   }
-  const server = new McpServer({ name: "brawsr", version: "0.1.0" });
+  const server = new McpServer({
+    name: "brawsr",
+    version: MCP_SERVER_VERSION,
+  });
   const client = options.client;
 
   server.registerTool(
@@ -100,17 +105,34 @@ export function createBrawsrMcpServer(
           cursor: z.string().min(1).max(4096).optional(),
           status: z.enum(["active", "closed", "expired"]).optional(),
           display_label: z.string().max(128).optional(),
+          search: z.string().min(1).max(128).optional(),
+          session_id: identifier.optional(),
+          created_from: z.iso.datetime({ offset: true }).optional(),
+          created_before: z.iso.datetime({ offset: true }).optional(),
         })
         .strict(),
       outputSchema: resultSchema,
     },
-    async ({ limit, cursor, status, display_label }) =>
+    async ({
+      limit,
+      cursor,
+      status,
+      display_label,
+      search,
+      session_id,
+      created_from,
+      created_before,
+    }) =>
       invoke(() =>
         client.listSessions({
           limit,
           cursor,
           status,
           displayLabel: display_label,
+          search,
+          sessionId: session_id,
+          createdFrom: created_from,
+          createdBefore: created_before,
         }),
       ),
   );

@@ -4,22 +4,42 @@ The authenticated local MCP bridge for brawsr browser sessions, checkpoints,
 rewind, and fork. It uses the official packaged `@brawsr/sdk`; it does not
 duplicate API models, poll orchestration, or browser/CDP behavior.
 
-Status: private pre-release. The v0.1 transport is stdio only and requires
-Node.js 22+.
+The v0.1 transport is local stdio and requires Node.js 22+.
 
-## Configure
+## Install and configure
 
-Install the SDK and server packages, then configure the locally spawned MCP
-process with environment variables:
+MCP clients spawn the server locally. Pin the package version in client
+configuration so an MCP client restart cannot silently select a newer release:
 
-```text
-BRAWSR_API_KEY=...
-BRAWSR_BASE_URL=https://api.example.com
-BRAWSR_MCP_TIMEOUT_MS=30000  # optional, 1..300000
+```json
+{
+  "mcpServers": {
+    "brawsr": {
+      "command": "npx",
+      "args": ["-y", "@brawsr/mcp-server@0.1.0"],
+      "env": {
+        "BRAWSR_API_KEY": "your-brawsr-api-key"
+      }
+    }
+  }
+}
 ```
 
+The npm package includes the official `@brawsr/sdk`; no second package install
+is required. `BRAWSR_API_KEY` is the only required environment variable. The
+production endpoint `https://api.brawsr.io` is built in.
+
+For local development or another deployment, `BRAWSR_BASE_URL` may explicitly
+override that endpoint. `BRAWSR_MCP_TIMEOUT_MS` optionally changes the default
+bounded operation wait from 30 seconds and accepts an integer from 1 through 300000.
+
 The API key is never a tool argument or result. Standard output is reserved for
-MCP protocol messages. Redacted lifecycle diagnostics use standard error.
+MCP protocol messages. Redacted lifecycle diagnostics use standard error. A
+direct shell launch uses the same executable:
+
+```bash
+BRAWSR_API_KEY=... npx -y @brawsr/mcp-server@0.1.0
+```
 
 ## Tools
 
@@ -71,6 +91,7 @@ npm ci
 npm run verify
 ```
 
-The checked-in SDK tarball is the exact private package identified in
-`DEPENDENCY_PROVENANCE.json`. It contains public consumer code only and is not
-a copy of SDK source. Registry publication remains a P3-M5 release gate.
+Release archives are built reproducibly with the pinned Node 24 and npm 11.5.1
+toolchain. CI also exercises the server and its real MCP client boundary on
+Node 22 and Node 24. npm hosts the executable package; the official MCP Registry
+hosts discovery metadata for `io.github.brawsr/brawsr`.
