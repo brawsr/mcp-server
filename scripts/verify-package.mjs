@@ -19,6 +19,10 @@ if (process.versions.node.split(".")[0] !== "20") {
 }
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const packageJson = JSON.parse(
+  readFileSync(path.join(root, "package.json"), "utf8"),
+);
+assert.equal(packageJson.license, "Apache-2.0");
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), "brawsr-mcp-package-"));
 const npmCommand = "npm";
 const environment = {
@@ -60,6 +64,7 @@ try {
   const second = pack(secondDirectory);
   assert.deepEqual(first.files, second.files);
   assert.deepEqual(first.files, [
+    "LICENSE",
     "README.md",
     "dist/cli.d.ts",
     "dist/cli.js",

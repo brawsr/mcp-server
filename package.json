@@ -28,7 +28,7 @@
     "verify:package": "npm run build && node scripts/verify-package.mjs",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run verify:package"
   },
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=20"
   },
