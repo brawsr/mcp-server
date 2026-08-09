@@ -1,27 +1,25 @@
 # Releasing
 
-Releases are verified and published from GitHub Actions. After the one-time npm
-bootstrap, npm and the official MCP Registry both use short-lived OIDC
-credentials. Do not add an npm token or MCP Registry token to the repository.
+Releases are verified and published from GitHub Actions. npm and the official
+MCP Registry both use short-lived OIDC credentials. Do not add an npm token or
+MCP Registry token to the repository, and do not publish releases manually.
 
-## One-time npm bootstrap
+## Publishing infrastructure
 
-npm requires a package to exist before a trusted publisher can be configured.
-An owner of the `@brawsr` npm scope must publish `@brawsr/mcp-server@0.1.0` once
-from the clean, verified release commit using interactive npm authentication.
+`@brawsr/mcp-server` is a public npm package. Its trusted publisher uses these
+exact values:
 
-Then configure the npm trusted publisher with these exact values:
-
-- GitHub owner: `brawsr`
+- GitHub organization: `brawsr`
 - Repository: `mcp-server`
 - Workflow: `publish.yml`
 - Environment: `npm`
 - Allowed action: `npm publish`
 
-Require two-factor authentication and disallow bypass-2FA tokens for package
-publishing access.
+Package publishing requires two-factor authentication and disallows bypass-2FA
+tokens. The matching official MCP Registry server is
+`io.github.brawsr/brawsr`.
 
-## Subsequent releases
+## Release
 
 1. Update `package.json`, `package-lock.json`, `src/version.ts`, and
    `server.json` together.
