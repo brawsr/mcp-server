@@ -5,7 +5,7 @@ rewind, and fork. It uses the official packaged `@brawsr/sdk`; it does not
 duplicate API models, poll orchestration, or browser/CDP behavior.
 
 Status: private pre-release. The v0.1 transport is stdio only and requires
-Node.js 20+.
+Node.js 22+.
 
 ## Configure
 

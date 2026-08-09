@@ -19,6 +19,21 @@ interface Calls {
   getLineage: unknown[][];
 }
 
+function detailMetadata(id: string) {
+  return {
+    checkpointCount: 0,
+    directChildCount: 0,
+    visibleDescendantCount: 0,
+    visibleDescendantCountTruncated: false,
+    collections: {
+      checkpoints: `/v1/sessions/${id}/checkpoints`,
+      ancestry: `/v1/sessions/${id}/ancestry`,
+      activity: `/v1/sessions/${id}/activity`,
+      lineage: `/v1/sessions/${id}/lineage`,
+    },
+  };
+}
+
 function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
   return {
     async createSession() {
@@ -31,6 +46,7 @@ function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
     },
     async getSession(id) {
       return {
+        ...detailMetadata(id),
         id,
         cdpUrl: `wss://api.test/v1/sessions/${id}/cdp`,
         status: "active",
@@ -61,6 +77,7 @@ function fakeSdk(calls: Calls, timeout = false): BrawsrSdk {
     async updateSessionLabel(id, displayLabel) {
       calls.updateSessionLabel.push([id, displayLabel]);
       return {
+        ...detailMetadata(id),
         id,
         cdpUrl: `wss://api.test/v1/sessions/${id}/cdp`,
         status: "active",

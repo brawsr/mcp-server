@@ -12,9 +12,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-if (process.versions.node.split(".")[0] !== "20") {
+if (process.versions.node.split(".")[0] !== "22") {
   throw new Error(
-    "reproducible MCP archives must be built with the pinned Node 20 toolchain",
+    "reproducible MCP archives must be built with the pinned Node 22 toolchain",
   );
 }
 
