@@ -26,7 +26,7 @@ assert.equal(packageJson.license, "Apache-2.0");
 assert.notEqual(packageJson.private, true);
 assert.equal(packageJson.name, "@brawsr/mcp-server");
 assert.equal(packageJson.mcpName, "io.github.brawsr/brawsr");
-assert.equal(packageJson.dependencies?.["@brawsr/sdk"], "0.1.0");
+assert.equal(packageJson.dependencies?.["@brawsr/sdk"], "0.2.0");
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), "brawsr-mcp-package-"));
 const npmCommand = "npm";
 const environment = {

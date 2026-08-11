@@ -38,7 +38,7 @@ assert.equal(packageJson.mcpName, "io.github.brawsr/brawsr");
 assert.equal(packageJson.version, sourceVersion);
 assert.equal(packageJson.version, manifest.version);
 assert.equal(packageJson.mcpName, manifest.name);
-assert.equal(packageJson.dependencies?.["@brawsr/sdk"], "0.1.0");
+assert.equal(packageJson.dependencies?.["@brawsr/sdk"], "0.2.0");
 assert.equal(packageJson.publishConfig?.access, "public");
 assert.equal(
   packageJson.publishConfig?.registry,

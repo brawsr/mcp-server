@@ -4,7 +4,7 @@ The authenticated local MCP bridge for brawsr browser sessions, checkpoints,
 rewind, and fork. It uses the official packaged `@brawsr/sdk`; it does not
 duplicate API models, poll orchestration, or browser/CDP behavior.
 
-The v0.1 transport is local stdio and requires Node.js 22+.
+The v0.2 transport is local stdio and requires Node.js 22+.
 
 ## Install and configure
 
@@ -16,7 +16,7 @@ configuration so an MCP client restart cannot silently select a newer release:
   "mcpServers": {
     "brawsr": {
       "command": "npx",
-      "args": ["-y", "@brawsr/mcp-server@0.1.0"],
+      "args": ["-y", "@brawsr/mcp-server@0.2.0"],
       "env": {
         "BRAWSR_API_KEY": "your-brawsr-api-key"
       }
@@ -38,7 +38,7 @@ MCP protocol messages. Redacted lifecycle diagnostics use standard error. A
 direct shell launch uses the same executable:
 
 ```bash
-BRAWSR_API_KEY=... npx -y @brawsr/mcp-server@0.1.0
+BRAWSR_API_KEY=... npx -y @brawsr/mcp-server@0.2.0
 ```
 
 ## Tools
@@ -82,7 +82,7 @@ Authorization header. Use the ordinary SDK or a supported framework to attach;
 the MCP server does not proxy CDP.
 
 Remote Streamable HTTP, OAuth, hosted multi-tenancy, legacy HTTP+SSE, and
-resumable MCP sessions are deferred beyond the local v0.1 stdio boundary.
+resumable MCP sessions are deferred beyond the local v0.2 stdio boundary.
 
 ## Development
 

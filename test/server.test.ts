@@ -296,6 +296,27 @@ test("real MCP client sees the exact high-level tool surface", async () => {
       tools.tools.find(({ name }) => name === "brawsr_fork")!.description!,
       /not winners\/losers/,
     );
+    const createSession = tools.tools.find(
+      ({ name }) => name === "brawsr_create_session",
+    )!;
+    const createProperties = (
+      createSession.inputSchema as { properties?: Record<string, unknown> }
+    ).properties;
+    assert.equal(createProperties?.mem_mib, undefined);
+  } finally {
+    await client.close();
+    await server.close();
+  }
+});
+
+test("session creation rejects customer memory selection before the SDK", async () => {
+  const { server, client } = await connected();
+  try {
+    const response = await client.callTool({
+      name: "brawsr_create_session",
+      arguments: { mem_mib: 768 },
+    });
+    assert.equal(response.isError, true);
   } finally {
     await client.close();
     await server.close();

@@ -78,17 +78,15 @@ export function createBrawsrMcpServer(
       inputSchema: z
         .object({
           ttl_seconds: z.number().int().positive().optional(),
-          mem_mib: z.number().int().positive().optional(),
           display_label: z.string().max(128).optional(),
         })
         .strict(),
       outputSchema: resultSchema,
     },
-    async ({ ttl_seconds, mem_mib, display_label }) =>
+    async ({ ttl_seconds, display_label }) =>
       invoke(() =>
         client.createSession({
           ttlSeconds: ttl_seconds,
-          memMib: mem_mib,
           displayLabel: display_label,
         }),
       ),

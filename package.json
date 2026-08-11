@@ -1,6 +1,6 @@
 {
   "name": "@brawsr/mcp-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Authenticated MCP tools for brawsr browser sessions, checkpoints, rewind, and fork.",
   "packageManager": "npm@11.5.1",
   "mcpName": "io.github.brawsr/brawsr",
@@ -61,7 +61,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@brawsr/sdk": "0.1.0",
+    "@brawsr/sdk": "0.2.0",
     "@modelcontextprotocol/sdk": "1.30.0",
     "zod": "4.4.3"
   },
